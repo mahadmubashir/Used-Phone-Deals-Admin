@@ -1,0 +1,25 @@
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import './index.css';
+import { App } from './App';
+import { QueryProvider } from '@/lib/query';
+import { AuthProvider } from '@/stores/auth';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+
+const container = document.getElementById('root');
+if (!container) throw new Error('Root element #root not found');
+
+createRoot(container).render(
+  <StrictMode>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <QueryProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </QueryProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
+  </StrictMode>,
+);

@@ -1,0 +1,82 @@
+/**
+ * UsedPhoneDeals.com — brand tokens.
+ *
+ * PLACEHOLDER BRANDING. Everything the brand touches is defined here; when the
+ * Client supplies the logo, palette and typography, this file is the only one
+ * that needs to change. The `brand` scale drives every primary button, link,
+ * focus ring and active state in both portals.
+ *
+ * The condition-grade colours below are fixed by the Agreement (Premium=amber,
+ * Excellent=green, Good=blue, Fair=grey) and should not be re-themed.
+ */
+
+@theme {
+  /* Primary — placeholder deep teal-blue */
+  --color-brand-50: oklch(0.971 0.014 233.4);
+  --color-brand-100: oklch(0.938 0.031 233.4);
+  --color-brand-200: oklch(0.885 0.059 233.4);
+  --color-brand-300: oklch(0.809 0.093 233.4);
+  --color-brand-400: oklch(0.708 0.128 233.4);
+  --color-brand-500: oklch(0.623 0.145 233.4);
+  --color-brand-600: oklch(0.531 0.139 240.2);
+  --color-brand-700: oklch(0.452 0.119 242.6);
+  --color-brand-800: oklch(0.388 0.097 244.1);
+  --color-brand-900: oklch(0.338 0.079 245.3);
+  --color-brand-950: oklch(0.232 0.056 247.1);
+
+  /* Accent — used sparingly for promotional surfaces */
+  --color-accent-400: oklch(0.828 0.161 79.2);
+  --color-accent-500: oklch(0.769 0.173 70.1);
+  --color-accent-600: oklch(0.681 0.162 62.4);
+
+  /* Typography — swap for the Client's licensed typeface */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+
+  /* Layout */
+  --radius-card: 0.75rem;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+    font-family: var(--font-sans);
+  }
+
+  /* Visible, consistent focus for keyboard users across both portals. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+  }
+
+  /* Respect reduced-motion preferences — WCAG 2.1 AA. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Skip link — first focusable element on every page. */
+  .skip-link {
+    @apply sr-only;
+  }
+  .skip-link:focus {
+    @apply not-sr-only fixed left-4 top-4 z-[100] rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-lg;
+  }
+}
