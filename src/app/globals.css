@@ -1,0 +1,360 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ------------------------------------------------------------------ *
+ * UsedPhoneDeals — design tokens
+ * Warm-neutral canvas, deep-indigo primary, teal eco accent,
+ * condition-grade colour ladder. Light + warm-charcoal dark.
+ * ------------------------------------------------------------------ */
+
+:root {
+  /* --- canvas & surfaces (warm neutrals) --- */
+  --background: #fafaf8;
+  --bg-subtle: #f4f3ef;
+  --foreground: #17150f;
+  --surface: #ffffff;
+  --surface-2: #fbfbf9;
+  --surface-inset: #f4f3ef;
+
+  --card: #ffffff;
+  --card-foreground: #17150f;
+  --popover: #ffffff;
+  --popover-foreground: #17150f;
+
+  --fg-muted: #57544d;
+  --fg-subtle: #6b675e; /* darkened for AA contrast on the warm canvas */
+
+  /* --- brand primary: deep indigo --- */
+  --primary: #3d2fd6;
+  --primary-foreground: #ffffff;
+  --primary-hover: #3324b0;
+
+  /* --- neutral secondary / muted (shadcn hover surfaces stay neutral) --- */
+  --secondary: #f4f3ef;
+  --secondary-foreground: #3d3b36;
+  --muted: #f4f3ef;
+  --muted-foreground: #57544d;
+  --accent: #f0eff9; /* subtle indigo-tinted hover surface for menus */
+  --accent-foreground: #2a1e8c;
+
+  /* --- eco / trade-in accent: teal-emerald (used sparingly) --- */
+  --accent-teal: #14b88a;
+
+  /* chart series — validated with the dataviz palette checker against the
+     white chart surface: lightness band, chroma floor, CVD separation and
+     3:1 contrast all pass. The brand teal (#14b88a) fails contrast on white
+     at 2.54:1, so charts use this deeper step instead. */
+  --chart-revenue: #3d2fd6;
+  --chart-commission: #0b7a5c;
+  --accent-teal-foreground: #08533f;
+  --accent-teal-subtle: #e6fbf4;
+
+  /* --- feedback --- */
+  --destructive: #e23d4b;
+  --success: #17a34a;
+  --warning: #e8961e;
+  --star: #f5a623;
+  --price-drop: #e23d4b;
+
+  /* --- lines & focus --- */
+  --border: #e9e7e0;
+  --border-strong: #d6d3ca;
+  --input: #e9e7e0;
+  --ring: #6e5ce0;
+
+  /* --- condition-grade ladder --- */
+  --grade-fair: #8a5b00;
+  --grade-fair-bg: #fbefd9;
+  --grade-good: #1e5fa8;
+  --grade-good-bg: #e1effb;
+  --grade-excellent: #3324b0;
+  --grade-excellent-bg: #e6e3fb;
+  --grade-premium: #0b7a5c;
+  --grade-premium-bg: #dff6ec;
+
+  /* --- radius (signature two-tier: soft cards, crisp chips) --- */
+  --radius: 0.75rem;
+  --radius-chip: 0.375rem; /* 6px */
+  --radius-card: 1.25rem; /* 20px */
+  --radius-panel: 1.75rem; /* 28px */
+
+  /* --- elevation (tight, low-spread, warm-tinted) --- */
+  --shadow-xs: 0 1px 2px rgba(23, 21, 15, 0.04);
+  --shadow-sm: 0 1px 3px rgba(23, 21, 15, 0.06), 0 1px 2px rgba(23, 21, 15, 0.04);
+  --shadow-card-hover: 0 8px 24px -6px rgba(23, 21, 15, 0.12), 0 2px 6px -2px rgba(23, 21, 15, 0.06);
+  --shadow-pop: 0 12px 32px -8px rgba(23, 21, 15, 0.16);
+
+  /* --- motion --- */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.dark {
+  --background: #100f0c;
+  --bg-subtle: #17150f;
+  --foreground: #f4f3ef;
+  --surface: #1c1a15;
+  --surface-2: #232019;
+  --surface-inset: #14120d;
+
+  --card: #1c1a15;
+  --card-foreground: #f4f3ef;
+  --popover: #1c1a15;
+  --popover-foreground: #f4f3ef;
+
+  --fg-muted: #b4afa3;
+  --fg-subtle: #857f72;
+
+  --primary: #7e6cf0;
+  --primary-foreground: #0b0a07;
+  --primary-hover: #9488e9;
+
+  --secondary: #232019;
+  --secondary-foreground: #f4f3ef;
+  --muted: #232019;
+  --muted-foreground: #b4afa3;
+  --accent: #221d3e;
+  --accent-foreground: #cfc7fb;
+
+  --accent-teal: #34d6a6;
+
+  /* Dark steps are re-picked, not flipped: the band here is L 0.48–0.67, and
+     the brand mint (#34d6a6, L 0.784) sits outside it. Both pass validation. */
+  --chart-revenue: #7e6cf0;
+  --chart-commission: #17a07c;
+  --accent-teal-foreground: #0b0a07;
+  --accent-teal-subtle: #0e2e24;
+
+  --destructive: #f26d78;
+  --success: #3ccb6e;
+  --warning: #f0b44e;
+  --star: #f7b84b;
+  --price-drop: #f26d78;
+
+  --border: #2e2b23;
+  --border-strong: #403c31;
+  --input: #2e2b23;
+  --ring: #9488e9;
+
+  --grade-fair: #f0b44e;
+  --grade-fair-bg: #3a2e12;
+  --grade-good: #6fb2f0;
+  --grade-good-bg: #122a3e;
+  --grade-excellent: #9488e9;
+  --grade-excellent-bg: #201b4a;
+  --grade-premium: #34d6a6;
+  --grade-premium-bg: #0e2e24;
+}
+
+@theme inline {
+  /* surfaces & text */
+  --color-background: var(--background);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-inset: var(--surface-inset);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  /* brand */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-teal: var(--accent-teal);
+  --color-accent-teal-foreground: var(--accent-teal-foreground);
+  --color-accent-teal-subtle: var(--accent-teal-subtle);
+
+  /* feedback */
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-star: var(--star);
+  --color-price-drop: var(--price-drop);
+
+  /* lines */
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* condition grades */
+  --color-grade-fair: var(--grade-fair);
+  --color-grade-fair-bg: var(--grade-fair-bg);
+  --color-grade-good: var(--grade-good);
+  --color-grade-good-bg: var(--grade-good-bg);
+  --color-grade-excellent: var(--grade-excellent);
+  --color-grade-excellent-bg: var(--grade-excellent-bg);
+  --color-grade-premium: var(--grade-premium);
+  --color-grade-premium-bg: var(--grade-premium-bg);
+
+  /* fonts (bound in layout.tsx via next/font) */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* radius */
+  --radius-chip: var(--radius-chip);
+  --radius-card: var(--radius-card);
+  --radius-panel: var(--radius-panel);
+
+  /* elevation */
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-card-hover: var(--shadow-card-hover);
+  --shadow-pop: var(--shadow-pop);
+
+  /* easing */
+  --ease-brand: var(--ease-out);
+
+  /* --- brand-* aliases for the vendored @upd/shared library ---
+     Their components are written against a `brand` scale from their own
+     theme.css (placeholder teal-blue, light mode only). Binding those names
+     to our indigo tokens makes the whole shared library adopt this brand and
+     inherit dark mode, without editing a single generated file. */
+  --color-chart-revenue: var(--chart-revenue);
+  --color-chart-commission: var(--chart-commission);
+
+  --color-brand-50: var(--accent);
+  --color-brand-500: var(--primary);
+  --color-brand-600: var(--primary);
+  --color-brand-700: var(--primary-hover);
+  --color-brand-800: var(--primary-hover);
+
+  /* section rhythm */
+  --spacing-section: clamp(3.5rem, 8vw, 7rem);
+}
+
+@layer base {
+  /* Nothing may scroll the page sideways. The structural causes are fixed
+     (header cluster, account grid min-width), so this is a guard against
+     decorative absolutely-positioned blurs and animated flourishes drifting
+     past the viewport edge. `clip` rather than `hidden` so it does not create
+     a scroll container and break `position: sticky` on the header. */
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  /* iOS zooms the viewport when a focused field is under 16px. Every input
+     stays at 16px on phones and drops to the design size from `sm` up, so
+     tapping a field never jolts the page. */
+  @media (max-width: 639px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  /* Interactive elements always show a pointer (UI/UX checklist) */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  label[for],
+  summary,
+  select {
+    cursor: pointer;
+  }
+  /* Tabular numerals for prices, specs, battery %, ratings */
+  .tnum {
+    font-feature-settings: "tnum" 1;
+    font-variant-numeric: tabular-nums;
+  }
+  /* Focus ring used across interactive brand elements */
+  .focus-ring {
+    @apply outline-none ring-offset-2 ring-offset-background focus-visible:ring-2 focus-visible:ring-ring;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Motion system — modern, tasteful, reduced-motion safe
+ * ------------------------------------------------------------------ */
+@keyframes upd-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-16px); }
+}
+@keyframes upd-float-slow {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(14px) translateX(-8px); }
+}
+@keyframes upd-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes upd-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes upd-page-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes upd-shimmer {
+  100% { transform: translateX(100%); }
+}
+@keyframes upd-pop {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Authored utility classes (always emitted; not tree-shaken) */
+.animate-float {
+  animation: upd-float 6s ease-in-out infinite;
+}
+.animate-float-slow {
+  animation: upd-float-slow 9s ease-in-out infinite;
+}
+.animate-marquee {
+  animation: upd-marquee 34s linear infinite;
+}
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: upd-gradient 14s ease infinite;
+}
+.animate-page-in {
+  animation: upd-page-in 0.45s var(--ease-out) both;
+}
+.animate-pop {
+  animation: upd-pop 0.35s var(--ease-out) both;
+}
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
