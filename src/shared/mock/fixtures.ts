@@ -21,7 +21,18 @@ import type {
 } from '../types';
 
 const DAY = 86_400_000;
-const now = () => Date.now();
+
+/**
+ * Fixed reference date, NOT the current time.
+ *
+ * These fixtures render on the server and again during hydration. Reading the
+ * real clock made the two renders disagree — the server's build-time date
+ * against the browser's today — which React rejects as a mismatch (error #418)
+ * and recovers from by discarding the server HTML. The gap widened as a build
+ * aged. Anchoring to a constant makes every date deterministic.
+ */
+const REFERENCE_NOW = Date.parse('2026-11-01T09:00:00.000Z');
+const now = () => REFERENCE_NOW;
 const iso = (offsetDays: number, hours = 0) =>
   new Date(now() + offsetDays * DAY + hours * 3_600_000).toISOString();
 
