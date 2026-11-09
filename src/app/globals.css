@@ -47,6 +47,13 @@
      white chart surface: lightness band, chroma floor, CVD separation and
      3:1 contrast all pass. The brand teal (#14b88a) fails contrast on white
      at 2.54:1, so charts use this deeper step instead. */
+  /* instrument surfaces — a graphite panel reads as equipment without
+     resorting to a full dark theme */
+  --readout-bg: #15141b;
+  --readout-fg: #f2f1ee;
+  --readout-line: #2b2935;
+  --readout-grid: rgba(255, 255, 255, 0.045);
+
   --chart-revenue: #3d2fd6;
   --chart-commission: #0b7a5c;
   --accent-teal-foreground: #08533f;
@@ -122,6 +129,11 @@
 
   /* Dark steps are re-picked, not flipped: the band here is L 0.48–0.67, and
      the brand mint (#34d6a6, L 0.784) sits outside it. Both pass validation. */
+  --readout-bg: #121118;
+  --readout-fg: #f2f1ee;
+  --readout-line: #2b2935;
+  --readout-grid: rgba(255, 255, 255, 0.05);
+
   --chart-revenue: #7e6cf0;
   --chart-commission: #17a07c;
   --accent-teal-foreground: #0b0a07;
@@ -236,6 +248,96 @@
 
   /* section rhythm */
   --spacing-section: clamp(3.5rem, 8vw, 7rem);
+}
+
+
+/* ------------------------------------------------------------------ *
+ * Instrumentation layer
+ *
+ * The brand's claim is that every device is measured: 30+ checks, a battery
+ * reading, a graded report. These utilities give that claim a visual language
+ * so measured values look measured, rather than being styled like prose.
+ *
+ * Rules of thumb:
+ *   .readout      a dark instrument surface — used sparingly, for panels that
+ *                 present measurements rather than merchandise
+ *   .measure      any figure that came from a measurement: mono, tabular,
+ *                 tight tracking, so columns of numbers align
+ *   .micro-label  a small key for a measured value. Sentence case, not caps —
+ *                 shouting a label is a template habit, not information
+ *   .hairline     a 1px rule used to separate data, never to decorate
+ *   .grid-field   faint technical grid, for instrument surfaces only
+ * ------------------------------------------------------------------ */
+@layer components {
+  .readout {
+    background-color: var(--readout-bg);
+    color: var(--readout-fg);
+    border: 1px solid var(--readout-line);
+  }
+
+  .measure {
+    font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  .micro-label {
+    font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    color: var(--fg-subtle);
+  }
+
+  .hairline {
+    border-color: var(--border);
+  }
+
+  /* 24px technical grid. Deliberately faint — it should register as texture,
+     not pattern. */
+  .grid-field {
+    background-image:
+      linear-gradient(to right, var(--readout-grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--readout-grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}
+
+/* One orchestrated load sequence, not a reveal on every section. Children
+   settle in order, like an instrument coming to rest, and then stop. */
+@keyframes upd-settle {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes upd-sweep {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@layer utilities {
+  .settle {
+    animation: upd-settle 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+  .sweep {
+    transform-origin: left;
+    animation: upd-sweep 0.9s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .settle,
+    .sweep {
+      animation: none;
+    }
+  }
 }
 
 @layer base {

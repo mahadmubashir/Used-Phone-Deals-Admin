@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, Inter, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { RoleProvider } from "@/components/admin/role-context";
+import { AuthGate } from "@/components/admin/auth-gate";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -29,9 +30,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     >
       <body className="min-h-full">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <RoleProvider>
-            <AdminShell>{children}</AdminShell>
-          </RoleProvider>
+          <AuthGate>
+            <RoleProvider>
+              <AdminShell>{children}</AdminShell>
+            </RoleProvider>
+          </AuthGate>
         </ThemeProvider>
       </body>
     </html>
