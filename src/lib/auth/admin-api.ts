@@ -44,13 +44,38 @@ export async function mfaSetup(challengeToken: string) {
   });
 }
 
-export async function mfaVerify(challengeToken: string, code: string): Promise<StaffUser> {
-  const res = await apiFetch<{ user: StaffUser; accessToken: string; refreshToken?: string }>(
-    "/auth/admin/mfa/verify",
-    { method: "POST", body: JSON.stringify({ challengeToken, code }) },
-  );
+/**
+ * Completes the second factor.
+ *
+ * On a first enrolment the API returns one-time recovery codes. They are the
+ * only way back in if the authenticator device is lost, they are shown once
+ * and stored hashed, so they are handed back to the caller to put in front of
+ * the user — dropping them here would lock people out permanently.
+ */
+export async function mfaVerify(
+  challengeToken: string,
+  input: { code?: string; recoveryCode?: string },
+): Promise<{ user: StaffUser; recoveryCodes?: string[] }> {
+  const res = await apiFetch<{
+    user: StaffUser;
+    accessToken: string;
+    refreshToken?: string;
+    recoveryCodes?: string[];
+  }>("/auth/admin/mfa/verify", {
+    method: "POST",
+    body: JSON.stringify({ challengeToken, ...input }),
+  });
   tokens.set(res.accessToken, res.refreshToken ?? null);
-  return res.user;
+  return { user: res.user, recoveryCodes: res.recoveryCodes };
+}
+
+/** Clears someone's two-factor enrolment so they can set it up again. */
+export async function resetMfa(userId: string, reason?: string) {
+  return apiFetch<{ message: string }>(`/users/${userId}/reset-mfa`, {
+    method: "POST",
+    auth: true,
+    body: JSON.stringify(reason ? { reason } : {}),
+  });
 }
 
 export async function me(): Promise<StaffUser | null> {
@@ -90,6 +115,8 @@ export interface Supplier {
   appliedAt?: string;
   approvedAt?: string | null;
   address?: { line1?: string; city?: string; postcode?: string } | null;
+  /** The login behind the business — needed to reset their two-factor setup. */
+  contact?: { userId: string; firstName?: string; lastName?: string } | null;
 }
 
 export async function listSuppliers(status?: string) {
