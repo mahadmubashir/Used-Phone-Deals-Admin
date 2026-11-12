@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Package,
@@ -48,13 +49,13 @@ const SECTIONS: {
   { section: "csr:orders", label: "Order lookup", href: "/orders", Icon: Receipt, group: "Customer service" },
   { section: "csr:home", label: "CSR overview", href: null, Icon: LayoutDashboard, group: "Customer service" },
 
-  { section: "supplier:home", label: "Overview", href: null, Icon: LayoutDashboard, group: "Supplier" },
-  { section: "supplier:submit-stock", label: "Submit stock", href: null, Icon: Upload, group: "Supplier" },
-  { section: "supplier:stock", label: "My stock", href: null, Icon: Boxes, group: "Supplier" },
-  { section: "supplier:orders", label: "Orders", href: null, Icon: Receipt, group: "Supplier" },
+  { section: "supplier:home", label: "Overview", href: "/supplier", Icon: LayoutDashboard, group: "Supplier" },
+  { section: "supplier:submit-stock", label: "Submit stock", href: "/supplier/stock/new", Icon: Upload, group: "Supplier" },
+  { section: "supplier:stock", label: "My stock", href: "/supplier/stock", Icon: Boxes, group: "Supplier" },
+  { section: "supplier:orders", label: "Orders", href: "/supplier/orders", Icon: Receipt, group: "Supplier" },
   { section: "supplier:csr-notifications", label: "CSR requests", href: null, Icon: Bell, group: "Supplier" },
-  { section: "supplier:earnings", label: "Earnings", href: null, Icon: Wallet, group: "Supplier" },
-  { section: "supplier:settings", label: "Settings", href: null, Icon: Settings, group: "Supplier" },
+  { section: "supplier:earnings", label: "Earnings", href: "/supplier/earnings", Icon: Wallet, group: "Supplier" },
+  { section: "supplier:settings", label: "Settings", href: "/supplier/settings", Icon: Settings, group: "Supplier" },
 ];
 
 function useVisibleSections(role: Role) {
@@ -136,11 +137,27 @@ function NoAccess({ role }: { role: Role }) {
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { role, setRole } = useRole();
+  const router = useRouter();
+  const { role, setRole, canSwitch } = useRole();
   const groups = useVisibleSections(role);
 
-  const isActive = (href: string | null) =>
-    !!href && (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  /**
+   * Exactly one nav item is current.
+   *
+   * Several routes nest — /supplier, /supplier/stock and /supplier/stock/new
+   * are all prefixes of one another — so a plain startsWith would light up
+   * three items at once. The longest matching href wins, which is the most
+   * specific page the viewer is actually on.
+   */
+  const activeHref = useMemo(() => {
+    const matches = SECTIONS.map((s) => s.href).filter(
+      (href): href is string =>
+        !!href && (href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)),
+    );
+    return matches.sort((a, b) => b.length - a.length)[0] ?? null;
+  }, [pathname]);
+
+  const isActive = (href: string | null) => !!href && href === activeHref;
 
   /**
    * Route guard, not just menu filtering. Hiding a nav item while the page
@@ -155,6 +172,25 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const allowedHere =
     sectionsForPath.length === 0 || sectionsForPath.some((s) => canAccess(role, s.section));
 
+  /**
+   * Send people to their own home rather than a locked door.
+   *
+   * "/" is the platform dashboard, which a supplier has no business seeing —
+   * so signing in dropped them on a permission-denied screen, which reads as
+   * a broken account rather than as access control working. Each role gets
+   * redirected to the first section it can actually use.
+   */
+  const homeFor = useMemo(
+    () =>
+      SECTIONS.find((s) => s.href && canAccess(role, s.section))?.href ?? null,
+    [role],
+  );
+
+  useEffect(() => {
+    if (allowedHere || !homeFor || pathname === homeFor) return;
+    router.replace(homeFor);
+  }, [allowedHere, homeFor, pathname, router]);
+
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       {/* Top bar */}
@@ -167,21 +203,29 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </span>
 
           <div className="ml-auto flex min-w-0 items-center gap-2">
-            <label className="sr-only" htmlFor="role-switcher">
-              Viewing as role
-            </label>
-            <select
-              id="role-switcher"
-              value={role}
-              onChange={(e) => setRole(e.target.value as Role)}
-              className="focus-ring max-w-[9.5rem] truncate rounded-lg border border-border bg-surface px-2.5 py-2 text-sm font-medium text-foreground"
-            >
-              {PORTAL_ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {ROLE_LABELS[r]}
-                </option>
-              ))}
-            </select>
+            {canSwitch ? (
+              <>
+                <label className="sr-only" htmlFor="role-switcher">
+                  Viewing as role
+                </label>
+                <select
+                  id="role-switcher"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value as Role)}
+                  className="focus-ring max-w-[9.5rem] truncate rounded-lg border border-border bg-surface px-2.5 py-2 text-sm font-medium text-foreground"
+                >
+                  {PORTAL_ROLES.map((r) => (
+                    <option key={r} value={r}>
+                      {ROLE_LABELS[r]}
+                    </option>
+                  ))}
+                </select>
+              </>
+            ) : (
+              <span className="truncate rounded-lg border border-border bg-surface-inset px-2.5 py-2 text-sm font-medium text-fg-muted">
+                {ROLE_LABELS[role]}
+              </span>
+            )}
             <ThemeToggle className="hidden sm:grid" />
           </div>
         </div>
