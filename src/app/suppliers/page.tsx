@@ -48,6 +48,7 @@ export default function SuppliersPage() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [working, setWorking] = React.useState<string | null>(null);
+  const [notice, setNotice] = React.useState<string | null>(null);
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -79,6 +80,36 @@ export default function SuppliersPage() {
       await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "That action failed.");
+    } finally {
+      setWorking(null);
+    }
+  }
+
+  /**
+   * Clears a supplier's two-factor enrolment.
+   *
+   * Their authenticator secret lives only on their device. Lose the phone and
+   * there is no way back in on their own — so this is the unlock, and it is
+   * recorded against the admin who did it.
+   */
+  async function resetMfa(row: Supplier) {
+    const userId = row.contact?.userId;
+    if (!userId) {
+      setError("That supplier has no linked login to reset.");
+      return;
+    }
+    const reason = window.prompt(
+      `Reset two-factor authentication for ${row.businessName}?\n\n` +
+        "They will set it up again at their next sign-in. Only do this once you are sure who you are speaking to.\n\n" +
+        "Reason (recorded in the audit log):",
+    );
+    if (!reason) return;
+    setWorking(`${row.id}:reset-mfa`);
+    try {
+      await api.resetMfa(userId, reason);
+      setNotice(`${row.businessName} will set up two-factor again at their next sign-in.`);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not reset their two-factor setup.");
     } finally {
       setWorking(null);
     }
@@ -132,6 +163,18 @@ export default function SuppliersPage() {
               {working === `${r.id}:${a}` ? "…" : ACTION_LABEL[a]}
             </button>
           ))}
+          {/* Available whatever their trading status: being locked out of an
+              authenticator has nothing to do with whether they are approved. */}
+          {r.contact?.userId && (
+            <button
+              onClick={() => resetMfa(r)}
+              disabled={working !== null}
+              title="Clear their two-factor setup so they can enrol again"
+              className="focus-ring rounded-full border border-border px-2.5 py-1 text-xs font-medium transition-colors hover:border-border-strong disabled:opacity-50"
+            >
+              {working === `${r.id}:reset-mfa` ? "…" : "Reset 2FA"}
+            </button>
+          )}
         </div>
       ),
     },
@@ -144,6 +187,11 @@ export default function SuppliersPage() {
         description="Applications and accounts, live from the platform. Tier is derived from stock units; payouts require verified KYC."
       />
 
+      {notice && (
+        <p className="rounded-lg border border-success/40 bg-success/10 px-4 py-3 text-sm font-medium text-success">
+          {notice}
+        </p>
+      )}
       {error && (
         <p role="alert" className="mb-3 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
           {error}
