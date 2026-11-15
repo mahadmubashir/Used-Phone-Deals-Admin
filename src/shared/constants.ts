@@ -509,6 +509,12 @@ export const ROLE_SECTIONS: Record<Role, PortalSection[]> = {
     'supplier:settings',
   ],
   CSR: ['csr:home', 'csr:queue', 'csr:case', 'csr:orders'],
+  // A Super Admin holds every other role's permissions, including a
+  // supplier's: they work a supplier's stock and order queue on that
+  // supplier's behalf, which is what the API allows and what the platform
+  // needs when a supplier cannot act for themselves. They are not scoped to
+  // one supplier, so the supplier views ask which supplier they are acting
+  // for and the API refuses a call that does not say.
   SUPER_ADMIN: [
     'admin:home',
     'admin:catalogue',
@@ -521,6 +527,13 @@ export const ROLE_SECTIONS: Record<Role, PortalSection[]> = {
     'csr:queue',
     'csr:case',
     'csr:orders',
+    'supplier:home',
+    'supplier:submit-stock',
+    'supplier:stock',
+    'supplier:orders',
+    'supplier:csr-notifications',
+    'supplier:earnings',
+    'supplier:settings',
   ],
   // Buyers have no access to the supplier/admin portal at all.
   BUYER: [],
